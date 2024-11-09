@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Memory Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #fff0f5;  /* Light pink background */
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .game-container {
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            aspect-ratio: 1;
+            background-color: #ff69b4;  /* Pink cards */
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            color: white;
+            transition: transform 0.3s;
+            user-select: none;
+        }
+        
+        .card.flipped {
+            transform: rotateY(180deg);
+            background-color: #ff1493;  /* Deeper pink when flipped */
+        }
+        
+        .stats {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+        
+        button {
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        
+        button:hover {
+            background-color: #ff1493;
+        }
+        
+        h1 {
+            color: #ff1493;
+            text-align: center;
+        }
+        
+        @media (max-width: 480px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            .card {
+                font-size: 3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Our Family Memory Game</h1>
+        <div class="stats">
+            Matches: <span id="matches">0</span> | 
+            Moves: <span id="moves">0</span>
+        </div>
+        <div class="grid" id="grid"></div>
+        <button onclick="resetGame()">New Game</button>
+    </div>
+
+    <script>
+        const emojis = ['👨', '👩', '👦', '👱‍♂️'];  // father, mother, boy, man
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        
+        function createBoard() {
+            const gameGrid = document.getElementById('grid');
+            gameGrid.innerHTML = '';
+            
+            // Double the emojis and shuffle them
+            cards = [...emojis, ...emojis]
+                .sort(() => Math.random() - 0.5);
+            
+            cards.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.index = index;
+                card.dataset.emoji = emoji;
+                card.addEventListener('click', flipCard);
+                gameGrid.appendChild(card);
+            });
+        }
+        
+        function flipCard() {
+            if (flippedCards.length === 2) return;
+            if (flippedCards.includes(this)) return;
+            if (this.classList.contains('flipped')) return;
+            
+            this.classList.add('flipped');
+            this.textContent = this.dataset.emoji;
+            flippedCards.push(this);
+            
+            if (flippedCards.length === 2) {
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                checkMatch();
+            }
+        }
+        
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const match = card1.dataset.emoji === card2.dataset.emoji;
+            
+            if (match) {
+                matchedPairs++;
+                document.getElementById('matches').textContent = matchedPairs;
+                flippedCards = [];
+                
+                if (matchedPairs === emojis.length) {
+                    setTimeout(() => {
+                        alert('Congratulations! You matched all family members! 👨‍👩‍👦');
+                    }, 500);
+                }
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    card1.textContent = '';
+                    card2.textContent = '';
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+        
+        function resetGame() {
+            matchedPairs = 0;
+            moves = 0;
+            flippedCards = [];
+            document.getElementById('matches').textContent = '0';
+            document.getElementById('moves').textContent = '0';
+            createBoard();
+        }
+        
+        // Start the game
+        createBoard();
+    </script>
+</body>
+</html>
